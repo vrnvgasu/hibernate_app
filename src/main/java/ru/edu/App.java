@@ -22,9 +22,14 @@ public class App
 
         try {
             session.beginTransaction();
-            // искать модель Person.class с первичным ключом=1
-            Person person = session.get(Person.class, 1);
-            System.out.println(person);
+            Person person1 = new Person("Test1", 20);
+            Person person2 = new Person("Test1", 30);
+            Person person3 = new Person("Test1", 40);
+
+            session.save(person1);
+            session.save(person2);
+            session.save(person3);
+
             session.getTransaction().commit();
         } finally {
             // обязательно закрываем
