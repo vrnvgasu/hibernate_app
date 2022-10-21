@@ -1,5 +1,6 @@
 package ru.edu;
 
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -23,14 +24,16 @@ public class App
         try {
             session.beginTransaction();
 
-            Person person = session.get(Person.class, 2);
-            // Hibernate связывает объект person с БД.
-            // После setName сразу произойдет обновление в базе
-            person.setName("NEW");
+            // Запрос с помощью HQL
+            List<Person> people = session
+                .createQuery("FROM Person where age > 30 and name like 'S% '").getResultList();
+            System.out.println(people);
 
-            // удаление
-            Person person2 = session.get(Person.class, 3);
-            session.delete(person2);
+            // Обновление с помощью HQL
+            session
+                .createQuery("update Person set name='T' where age<30 ").executeUpdate();
+            session
+                .createQuery("delete from Person where age<30 ").executeUpdate();
 
             session.getTransaction().commit();
         } finally {
