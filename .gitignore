@@ -1,1 +1,3 @@
 .idea
+hibernate_demo_docker/postgres-data
+/target
