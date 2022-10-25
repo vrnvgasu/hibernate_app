@@ -5,12 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.util.List;
 
 @Entity // Аннотация связываем класс с БД
 @Table(name = "person")
-public class Person {
+public class  Person {
 
 	@Id // для первичного ключа
 	@Column(name = "id")
@@ -27,6 +29,18 @@ public class Person {
 
 	@Column(name = "age")
 	private Integer age;
+
+	// ссылаемся на свойство owner из сущности Person
+	@OneToMany(mappedBy = "owner")
+	private List<Item> items;
+
+	public List<Item> getItems() {
+		return items;
+	}
+
+	public void setItems(List<Item> items) {
+		this.items = items;
+	}
 
 	public Person() {}
 
