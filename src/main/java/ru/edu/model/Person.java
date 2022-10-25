@@ -8,7 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 @Entity // Аннотация связываем класс с БД
 @Table(name = "person")
@@ -30,8 +33,15 @@ public class  Person {
 	@Column(name = "age")
 	private Integer age;
 
-	// ссылаемся на свойство owner из сущности Person
+	// ссылаемся на свойство owner из сущности Item
+	// CascadeType.PERSIST - сохраняет связанные сущности
+	// будет работать только для стандартного метода JPA - persist (для save - нет)
+//	@OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
 	@OneToMany(mappedBy = "owner")
+	// правило каскадирования для метода save (этот метод из Hibernate, а не JPA)
+	@Cascade(CascadeType.SAVE_UPDATE)
+	// обновляет relation при обновлении связанной сущности
+//	@Cascade(CascadeType.REFRESH)
 	private List<Item> items;
 
 	public List<Item> getItems() {
@@ -71,6 +81,15 @@ public class  Person {
 
 	public void setAge(Integer age) {
 		this.age = age;
+	}
+
+	public void addItem(Item item) {
+		if (this.items == null) {
+			this.items = new ArrayList<>();
+		}
+
+		this.items.add(item);
+		item.setOwner(this);
 	}
 
 	@Override

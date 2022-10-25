@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.hibernate.cfg.Configuration;
 import ru.edu.model.Item;
 import ru.edu.model.Person;
@@ -29,44 +31,25 @@ public class App
         try {
             session.beginTransaction();
 
-//            // получить данные
-//            Person person = session.get(Person.class, 3);
-//            // внутри транзакции hibernate из обычного геттера делает sql запрос
-//            List<Item> items = person.getItems();
-//            System.out.println(items);
-//
-//            Item item = session.get(Item.class, 5);
-//            Person person1 = item.getOwner();
-//            System.out.println(person1);
-
-//            // привязываем новый товар к существующему пользователю
-//            Person person = session.get(Person.class, 3);
-//            Item item = new Item("Product", person);
-//            // hibernate кеширует данные. Если не обновить данные с другой стороны
-//            // то в приложении может не отображаться связь со стороны person
-//            // хотя она будет в бд
-////            person.getItems().add(item);
-//            session.save(item);
-
-//            // создаем 2 новые сущности
-//            Person person = new Person("NEW", 90);
-//            Item item = new Item("Apple", person);
+//            Person person = new Person("Test cascading", 77);
+//            Item item = new Item("Test cascading item", person);
 //            person.setItems(new ArrayList<>(Collections.singletonList(item)));
-//
+
+            // persist вместо save
+            // в Person для List<Item> items поставили правило каскадирования
+            // cascade = CascadeType.PERSIST
+            // session.persist(person) под капотом сделает session.persist(item)
+//            session.persist(person);
+
+            // работает с аннотацией каскодирования в Person для List<Item> items
+            // @Cascade(CascadeType.SAVE_UPDATE)
 //            session.save(person);
-//            session.save(item);
 
-            // удаляем записи
-            Person person = session.get(Person.class, 3);
-            List<Item> items = person.getItems();
-            for (Item item: items) {
-                session.remove(item);
-            }
-
-            // если не очистим вручную список в объекте, то
-            // все равно получим данные, т.к. hibernate их закешировал
-            person.getItems().clear();
-            System.out.println(person.getItems());
+            Person person = new Person("Test cascading", 77);
+            person.addItem(new Item("Item 1"));
+            person.addItem(new Item("Item 2"));
+            person.addItem(new Item("Item 3"));
+            session.save(person);
 
             session.getTransaction().commit();
         } finally {
