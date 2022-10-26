@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class  Person {
 //	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "name_из_SequenceGenerator")
 //	allocationSize - на сколько увеличиваем сиквенс
 //	@SequenceGenerator(name = "любое_название", sequenceName = "название_сиквенса_в_бд", allocationSize = 1)
-	private int id;
+	private Integer id;
 
 	@Column(name = "name")
 	private String name;
@@ -44,12 +45,25 @@ public class  Person {
 //	@Cascade(CascadeType.REFRESH)
 	private List<Item> items;
 
+	@OneToOne(mappedBy = "person")
+	@Cascade(CascadeType.SAVE_UPDATE)
+	private Passport passport;
+
 	public List<Item> getItems() {
 		return items;
 	}
 
 	public void setItems(List<Item> items) {
 		this.items = items;
+	}
+
+	public Passport getPassport() {
+		return passport;
+	}
+
+	public void setPassport(Passport passport) {
+		this.passport = passport;
+		passport.setPerson(this);
 	}
 
 	public Person() {}

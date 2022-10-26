@@ -9,6 +9,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.cfg.Configuration;
 import ru.edu.model.Item;
+import ru.edu.model.Passport;
 import ru.edu.model.Person;
 
 /**
@@ -23,7 +24,8 @@ public class App
         Configuration configuration = new Configuration()
             // указываем конфигурации сущность Person и Item
             .addAnnotatedClass(Person.class)
-            .addAnnotatedClass(Item.class);
+            .addAnnotatedClass(Item.class)
+            .addAnnotatedClass(Passport.class);
 
         SessionFactory sessionFactory = configuration.buildSessionFactory();
         Session session = sessionFactory.getCurrentSession();
@@ -31,25 +33,23 @@ public class App
         try {
             session.beginTransaction();
 
-//            Person person = new Person("Test cascading", 77);
-//            Item item = new Item("Test cascading item", person);
-//            person.setItems(new ArrayList<>(Collections.singletonList(item)));
+            Person person = new Person("Test person", 77);
+            Passport passport = new Passport(777);
+            person.setPassport(passport);
 
-            // persist вместо save
-            // в Person для List<Item> items поставили правило каскадирования
-            // cascade = CascadeType.PERSIST
-            // session.persist(person) под капотом сделает session.persist(item)
-//            session.persist(person);
-
-            // работает с аннотацией каскодирования в Person для List<Item> items
+            // достаточно сохранить одну модель
+            // связанная сущность сохраниться благодаря каскадированию
             // @Cascade(CascadeType.SAVE_UPDATE)
-//            session.save(person);
-
-            Person person = new Person("Test cascading", 77);
-            person.addItem(new Item("Item 1"));
-            person.addItem(new Item("Item 2"));
-            person.addItem(new Item("Item 3"));
             session.save(person);
+
+//            Person person = session.get(Person.class, 10);
+//            System.out.println(person.getPassport().getPassportNumber());
+//
+//            // на сеттере hibernate сделает запрос к бд
+//            // т.к. session.get выше помещает объект в persistence context
+//            person.getPassport().setPassportNumber(888);
+//
+//            session.remove(person);
 
             session.getTransaction().commit();
         } finally {
