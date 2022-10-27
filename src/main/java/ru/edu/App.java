@@ -3,6 +3,7 @@ package ru.edu;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.annotations.Cascade;
@@ -16,45 +17,66 @@ import ru.edu.model.Person;
 
 /**
  * Hello world!
- *
  */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        // src/main/resources/hibernate.properties подхватился по умолчанию
-        Configuration configuration = new Configuration()
-            // указываем конфигурации сущность Person и Item
-            .addAnnotatedClass(Person.class)
-            .addAnnotatedClass(Item.class)
-            .addAnnotatedClass(Passport.class)
-            .addAnnotatedClass(Movie.class)
-            .addAnnotatedClass(Actor.class);
+public class App {
 
-        SessionFactory sessionFactory = configuration.buildSessionFactory();
-        Session session = sessionFactory.getCurrentSession();
+	public static void main(String[] args) {
+		// src/main/resources/hibernate.properties подхватился по умолчанию
+		Configuration configuration = new Configuration()
+				// указываем конфигурации сущность Person и Item
+				.addAnnotatedClass(Person.class)
+				.addAnnotatedClass(Item.class)
+				.addAnnotatedClass(Passport.class)
+				.addAnnotatedClass(Movie.class)
+				.addAnnotatedClass(Actor.class);
 
-        //try with resources - автоматом закрое sessionFactory
-        try(sessionFactory) {
-            session.beginTransaction();
+		SessionFactory sessionFactory = configuration.buildSessionFactory();
+		Session session = sessionFactory.getCurrentSession();
 
-//            Movie movie = new Movie("Test movie", 1911);
-//            Actor actor1 = new Actor("Actor1", 15);
-//            Actor actor2 = new Actor("Actor2", 15);
-//
-//            movie.setActors(new ArrayList<>(List.of(actor1, actor2)));
-//            actor1.setMovies(new ArrayList<>(Collections.singletonList(movie)));
-//            actor2.setMovies(new ArrayList<>(Collections.singletonList(movie)));
-//
-//            // надо сохранять все, если не настраиваем правила каскадирования
-//            session.save(movie);
-//            session.save(actor1);
-//            session.save(actor2);
+		//try with resources - автоматом закрое sessionFactory
+		try (sessionFactory) {
+			session.beginTransaction();
 
-            Movie movie = session.get(Movie.class, 4);
-            System.out.println(movie.getActors());
+			Person person = session.get(Person.class, 9);
+			System.out.println("Получили person");
 
-            session.getTransaction().commit();
-        }
-    }
+			// relations
+			// по умолчанию для OneToMany - Lazy (подгружаем данные при явном обращении).
+//            System.out.println(person.getItems());
+
+			// Если не взаимодействовать с ленивой загрузкой явно. Т.е. просто вызывать person.getItems(),
+			// то компилятор оптимизирует код и не скомпилирует это строку
+			// чтобы сделать явную подгрузку надо выполнить
+			Hibernate.initialize(person.getItems());
+			session.getTransaction().commit();
+
+			/////////////// Открываем сессию еще раз
+			session = sessionFactory.getCurrentSession();
+			session.beginTransaction();
+			Item item = session.get(Item.class, 13);
+			// для ManyToOne по умолчанию - Eager
+			// при запросе item уже был сделан left join
+			System.out.println("Получили item");
+
+			System.out.println(item.getOwner());
+			session.getTransaction().commit();
+
+			/////////////// Открываем сессию и транзакцию  еще раз
+			session = sessionFactory.getCurrentSession();
+			session.beginTransaction();
+
+			// в предыдущих сессиях person был в persistence context
+			// переложили его в эту сессию
+			person = (Person) session.merge(person);
+
+			// HQL запрос
+			System.out.println("HQL");
+			List<Item> items = session.createQuery("select i from Item i where i.owner.id=:personId", Item.class)
+					.setParameter("personId", person.getId()).getResultList();
+//			Hibernate.initialize(person.getItems());
+
+			session.getTransaction().commit();
+		}
+	}
+
 }

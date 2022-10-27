@@ -2,6 +2,7 @@ package ru.edu.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -38,7 +39,7 @@ public class  Person {
 	// CascadeType.PERSIST - сохраняет связанные сущности
 	// будет работать только для стандартного метода JPA - persist (для save - нет)
 //	@OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
-	@OneToMany(mappedBy = "owner")
+	@OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
 	// правило каскадирования для метода save (этот метод из Hibernate, а не JPA)
 	@Cascade(CascadeType.SAVE_UPDATE)
 	// обновляет relation при обновлении связанной сущности
